@@ -19,15 +19,26 @@
 <!-- TODO IMAGEN: cuando tengas hosting, mover a tu dominio (og 1200x630) -->
 <meta property="og:image" content="https://i.imgur.com/tVjPdE6.png">
 <meta property="og:image:alt" content="Abogados laborales en Córdoba">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="geo.region" content="AR-X">
 <meta name="author" content="Abogados Laborales Córdoba">
 <meta name="theme-color" content="#1B2839">
-<!-- agregar favicon -->
-<link rel="preload" as="image" href="https://i.imgur.com/tVjPdE6.png" fetchpriority="high">
-<!-- Recomendado: alojar la imagen del hero en el propio dominio en WebP (≤150 KB; og:image 1200×630) -->
 
-<!-- AQUÍ TAGS DE ADS Y ANALYTICS -->
+<!-- Favicon placeholder (SVG inline, sin peso) -->
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><text y='20' font-size='20'>%E2%9A%96%EF%B8%8F</text></svg>">
+
+<!-- ============================================================ -->
+<!-- GOOGLE ADS / ANALYTICS — etiqueta base                       -->
+<!-- ============================================================ -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=AW-18499427426"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'AW-18499427426');
+</script>
 
 <script type="application/ld+json">
 {
@@ -151,6 +162,7 @@ button,input,select,textarea{font-family:inherit;font-size:16px}
 }
 
 .hero{
+  background:#1B2839;
   min-height:100vh;display:flex;align-items:center;position:relative;overflow:hidden;
   padding:96px 0 60px;
   background:linear-gradient(160deg,#1B2839 0%,#0F1722 100%);
@@ -937,7 +949,7 @@ section{padding:56px 0}
           </div>
           <div class="form-field">
             <label for="situacionForm">¿Cuál es tu situación?</label>
-            <select id="situacionForm">
+            <select id="situacionForm" name="situacion">
               <option>Trabajo en negro</option>
               <option>Me despidieron sin causa</option>
               <option>Me registraron mal o parcialmente</option>
@@ -1006,18 +1018,38 @@ var WA = '543513496048';
 var LEAD_ENDPOINT = '';
 var GBP_URL = '';
 
+// ============================================================
+// GOOGLE ADS — ETIQUETA DE CONVERSIÓN
+// ============================================================
+// PASO 1: En Google Ads → Objetivos → Conversiones → + Nueva acción.
+// PASO 2: Tipo "Sitio web". Categoría "Contacto". Sin valor.
+// PASO 3: En "Configurar la etiqueta" elegí "Usar Google Tag".
+// PASO 4: Copiá la etiqueta (formato AbC-D_efGhIjKlMnOpQr) y pegala abajo.
+//         Si todavía no la tenés, dejá el placeholder: no rompe nada.
+// ============================================================
+var ADS_CONV_WHATSAPP = 'PEGAR_AQUI_LA_ETIQUETA';
+
 function $(s){ return document.querySelector(s); }
 function $$(s){ return document.querySelectorAll(s); }
 
 function track(name, params){
   if (typeof window.gtag === 'function') window.gtag('event', name, params || {});
-  if (window.dataLayer && !window.gtag) window.dataLayer.push(Object.assign({ event: name }, params || {}));
+  else if (window.dataLayer) window.dataLayer.push(Object.assign({ event: name }, params || {}));
+}
+
+function trackWhatsAppConversion(ubicacion){
+  if (!ADS_CONV_WHATSAPP || ADS_CONV_WHATSAPP.indexOf('PEGAR') === 0) return;
+  if (typeof window.gtag !== 'function') return;
+  window.gtag('event', 'conversion', {
+    send_to: 'AW-18499427426/' + ADS_CONV_WHATSAPP,
+    ubicacion: ubicacion
+  });
 }
 
 var yrEl = $('#yr'); if (yrEl) yrEl.textContent = new Date().getFullYear();
 
 // ============================================================
-// GBP_URL
+// GBP_URL (reservado para cuando tengas Google Business Profile)
 // ============================================================
 (function(){
   if (!GBP_URL) return;
@@ -1131,12 +1163,14 @@ $$('.sit-card').forEach(function(a){
 });
 
 // ============================================================
-// WHATSAPP CLICK GLOBAL
+// WHATSAPP CLICK GLOBAL + CONVERSIÓN GOOGLE ADS
 // ============================================================
 document.addEventListener('click', function(e){
   var a = e.target.closest && e.target.closest('a[href*="wa.me"]');
   if (!a) return;
-  track('whatsapp_click', { ubicacion: a.dataset.ubicacion || 'sin_ubicacion' });
+  var ubicacion = a.dataset.ubicacion || 'sin_ubicacion';
+  track('whatsapp_click', { ubicacion: ubicacion });
+  trackWhatsAppConversion(ubicacion);
 }, true);
 
 // ============================================================
@@ -1244,7 +1278,7 @@ function calc(){
   var inicioAnio = new Date(y, 0, 1);
   if (inicioAnio < i) inicioAnio = i;
   var diasAnio = (f - inicioAnio) / 86400000 + 1;
-  var vac = dVac * (diasAnio / 365) * (sb / 25);
+  var vac = dVac * (diasAnio / 365) * (sb / 30);
 
   var diasTrabMes = f.getDate();
   var sueldoProp = (diasTrabMes / diasMes) * sb;
@@ -1289,7 +1323,6 @@ function calc(){
   if (!calcEnviado) {
     calcEnviado = true;
     track('calculadora_usada', { registro: tipo });
-    setTimeout(function(){ calcEnviado = false; }, 2500);
   }
 }
 
@@ -1343,6 +1376,7 @@ if (form) {
     var telefono = telEl.value.trim();
 
     track('form_submit', { situacion: situacion });
+    trackWhatsAppConversion('formulario');
 
     if (LEAD_ENDPOINT) {
       try {
