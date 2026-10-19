@@ -1156,11 +1156,8 @@ var GBP_URL = '';       // Opcional: pegar URL de Google Business cuando la teng
 var MENSAJE_DEFAULT = 'Hola, necesito asesoramiento laboral';
 
 // ============================================================
-// GOOGLE ADS — CONVERSIÓN WHATSAPP
+// GOOGLE ADS — CONVERSIÓN WHATSAPP (VÍA GTM)
 // ============================================================
-// Usamos el ID exacto de conversión que te dio Google Ads
-var ADS_CONV_WHATSAPP = 'AW-17499667580/q14yClqLyKldEPz4vphB';
-
 function $(s){ return document.querySelector(s); }
 function $$(s){ return document.querySelectorAll(s); }
 
@@ -1170,14 +1167,14 @@ function track(name, params){
 }
 
 function trackWhatsAppConversion(ubicacion){
-  if (!ADS_CONV_WHATSAPP) return;
-  if (typeof window.gtag !== 'function') return;
-  
-  // Disparamos la conversión con el ID correcto
-  window.gtag('event', 'conversion', {
-    send_to: ADS_CONV_WHATSAPP,
-    ubicacion: ubicacion
-  });
+  // Enviamos la señal a Google Tag Manager. 
+  // GTM escuchará este evento 'clic_contacto' y disparará la conversión de Google Ads.
+  if (window.dataLayer) {
+    window.dataLayer.push({
+      'event': 'clic_contacto',
+      'ubicacion': ubicacion
+    });
+  }
 }
 
 var yrEl = $('#yr'); if (yrEl) yrEl.textContent = new Date().getFullYear();
